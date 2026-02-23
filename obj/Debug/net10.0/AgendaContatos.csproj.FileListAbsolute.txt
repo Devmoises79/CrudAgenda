@@ -15,6 +15,7 @@ C:\Users\MOISÉS\Desktop\AgendaContatos\bin\Debug\net10.0\Microsoft.Data.Sqlite.
 C:\Users\MOISÉS\Desktop\AgendaContatos\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.dll
 C:\Users\MOISÉS\Desktop\AgendaContatos\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Abstractions.dll
 C:\Users\MOISÉS\Desktop\AgendaContatos\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Design.dll
+C:\Users\MOISÉS\Desktop\AgendaContatos\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.InMemory.dll
 C:\Users\MOISÉS\Desktop\AgendaContatos\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Relational.dll
 C:\Users\MOISÉS\Desktop\AgendaContatos\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Sqlite.dll
 C:\Users\MOISÉS\Desktop\AgendaContatos\bin\Debug\net10.0\Microsoft.Extensions.Caching.Abstractions.dll
@@ -132,6 +133,7 @@ C:\Users\MOISÉS\Desktop\AgendaContatos\obj\Debug\net10.0\AgendaContatos.Generat
 C:\Users\MOISÉS\Desktop\AgendaContatos\obj\Debug\net10.0\AgendaContatos.AssemblyInfoInputs.cache
 C:\Users\MOISÉS\Desktop\AgendaContatos\obj\Debug\net10.0\AgendaContatos.AssemblyInfo.cs
 C:\Users\MOISÉS\Desktop\AgendaContatos\obj\Debug\net10.0\AgendaContatos.csproj.CoreCompileInputs.cache
+C:\Users\MOISÉS\Desktop\AgendaContatos\obj\Debug\net10.0\AgendaContatos.sourcelink.json
 C:\Users\MOISÉS\Desktop\AgendaContatos\obj\Debug\net10.0\AgendaCo.74BF41C3.Up2Date
 C:\Users\MOISÉS\Desktop\AgendaContatos\obj\Debug\net10.0\AgendaContatos.dll
 C:\Users\MOISÉS\Desktop\AgendaContatos\obj\Debug\net10.0\refint\AgendaContatos.dll

@@ -1,0 +1,54 @@
+name: CI - Agenda Contatos
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout do código
+      uses: actions/checkout@v4
+    
+    - name: Configurar .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+        
+    - name: Cache de pacotes NuGet
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+    
+    - name: Restaurar dependências
+      run: dotnet restore
+      
+    - name: Compilar o projeto
+      run: dotnet build --no-restore --configuration Release
+      
+    - name: Testar execução da aplicação
+      run: |
+        echo " Testando se a aplicação inicia corretamente..."
+        dotnet run --project AgendaContatos.csproj -- --test-mode
+      
+    - name: Verificar integridade do banco de dados
+      run: |
+        echo " Verificando se o banco SQLite pode ser criado..."
+        dotnet run --project AgendaContatos.csproj -- --db-test
+      
+    - name: Upload de artefatos (opcional)
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts
+        path: |
+          **/*.dll
+          **/*.exe
+          **/*.db
+        retention-days: 7

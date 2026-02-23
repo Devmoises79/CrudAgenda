@@ -3,141 +3,247 @@ using AgendaContatos.Models;
 
 namespace AgendaContatos;
 
-class Program
+public class Program
 {
-    static void Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
-        // Garante que o banco de dados existe
-        using var db = new AppDbContext();
-        db.Database.EnsureCreated();
+        // Modo de teste para GitHub Actions
+        if (args.Length > 0)
+        {
+            return await ExecuteTestModeAsync(args);
+        }
 
+        // Execução normal da aplicação
+        return await ExecuteNormalModeAsync();
+    }
+
+    private static async Task<int> ExecuteTestModeAsync(string[] args)
+    {
+        switch (args[0])
+        {
+            case "--test-mode":
+                Console.WriteLine(" Modo de teste: Aplicação compilada com sucesso!");
+                Console.WriteLine($" Versão: {typeof(Program).Assembly.GetName().Version}");
+                Console.WriteLine($" Timestamp: {DateTime.Now}");
+                return 0;
+
+            case "--db-test":
+                Console.WriteLine(" Testando conexão com o banco de dados...");
+                try
+                {
+                    using var testDb = new AppDbContext();
+                    await testDb.Database.EnsureCreatedAsync();
+                    Console.WriteLine(" Banco de dados criado/verificado com sucesso!");
+
+                    var count = testDb.Contatos.Count();
+                    Console.WriteLine($" Total de contatos cadastrados: {count}");
+                    return 0;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($" Erro no banco de dados: {ex.Message}");
+                    return 1;
+                }
+
+            default:
+                Console.WriteLine($" Argumento desconhecido: {args[0]}");
+                return 1;
+        }
+    }
+
+    private static async Task<int> ExecuteNormalModeAsync()
+    {
+        try
+        {
+            // Inicializa e verifica o banco de dados
+            using var db = new AppDbContext();
+            await db.Database.EnsureCreatedAsync();
+
+            var agendaManager = new AgendaManager(db);
+            await agendaManager.ExecutarMenuPrincipalAsync();
+
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($" Erro fatal: {ex.Message}");
+            return 1;
+        }
+    }
+}
+
+public class AgendaManager
+{
+    private readonly AppDbContext _db;
+
+    public AgendaManager(AppDbContext db)
+    {
+        _db = db;
+    }
+
+    public async Task ExecutarMenuPrincipalAsync()
+    {
         bool executando = true;
-        
+
         while (executando)
         {
-            Console.WriteLine("\n=== AGENDA DE CONTATOS ===");
-            Console.WriteLine("1 - Listar contatos");
-            Console.WriteLine("2 - Adicionar contato");
-            Console.WriteLine("3 - Atualizar contato");
-            Console.WriteLine("4 - Remover contato");
-            Console.WriteLine("5 - Sair");
-            Console.Write("Escolha uma opção: ");
-            
-            string opcao = Console.ReadLine();
-            
+            ExibirMenu();
+            var opcao = Console.ReadLine();
+
             switch (opcao)
             {
                 case "1":
-                    ListarContatos();
+                    await ListarContatosAsync();
                     break;
                 case "2":
-                    AdicionarContato();
+                    await AdicionarContatoAsync();
                     break;
                 case "3":
-                    AtualizarContato();
+                    await AtualizarContatoAsync();
                     break;
                 case "4":
-                    RemoverContato();
+                    await RemoverContatoAsync();
                     break;
                 case "5":
                     executando = false;
-                    Console.WriteLine("Até logo!");
+                    Console.WriteLine(" Até logo!");
                     break;
                 default:
-                    Console.WriteLine("Opção inválida!");
+                    Console.WriteLine(" Opção inválida!");
                     break;
             }
         }
     }
 
-    static void ListarContatos()
+    private static void ExibirMenu()
     {
-        using var db = new AppDbContext();
-        var contatos = db.Contatos.ToList();
-        
+        Console.WriteLine("\n === AGENDA DE CONTATOS ===");
+        Console.WriteLine("1 -  Listar contatos");
+        Console.WriteLine("2 -  Adicionar contato");
+        Console.WriteLine("3 -  Atualizar contato");
+        Console.WriteLine("4 -  Remover contato");
+        Console.WriteLine("5 -  Sair");
+        Console.Write("Escolha uma opção: ");
+    }
+
+    private async Task ListarContatosAsync()
+    {
+        var contatos = await Task.Run(() => _db.Contatos.ToList());
+
         if (contatos.Count == 0)
         {
-            Console.WriteLine("\nNenhum contato cadastrado.");
+            Console.WriteLine("\n Nenhum contato cadastrado.");
             return;
         }
-        
-        Console.WriteLine("\n--- LISTA DE CONTATOS ---");
+
+        Console.WriteLine("\n --- LISTA DE CONTATOS ---");
         foreach (var c in contatos)
         {
             Console.WriteLine($"ID: {c.Id} | Nome: {c.Nome} | Telefone: {c.Telefone} | Email: {c.Email}");
         }
     }
 
-    static void AdicionarContato()
+    private async Task AdicionarContatoAsync()
     {
-        using var db = new AppDbContext();
-        
         var contato = new Contato();
-        
-        Console.Write("\nNome: ");
-        contato.Nome = Console.ReadLine();
-        
-        Console.Write("Telefone: ");
-        contato.Telefone = Console.ReadLine();
-        
-        Console.Write("Email: ");
-        contato.Email = Console.ReadLine();
-        
-        db.Contatos.Add(contato);
-        db.SaveChanges();
-        
-        Console.WriteLine("Contato adicionado com sucesso!");
+
+        Console.Write("\n Nome: ");
+        contato.Nome = LerEntradaObrigatoria("Nome");
+
+        Console.Write(" Telefone: ");
+        contato.Telefone = LerEntradaObrigatoria("Telefone");
+
+        Console.Write(" Email: ");
+        contato.Email = LerEntradaObrigatoria("Email");
+
+        _db.Contatos.Add(contato);
+        await _db.SaveChangesAsync();
+
+        Console.WriteLine(" Contato adicionado com sucesso!");
     }
 
-    static void AtualizarContato()
+    private async Task AtualizarContatoAsync()
     {
-        using var db = new AppDbContext();
-        
-        Console.Write("\nID do contato a atualizar: ");
-        if (int.TryParse(Console.ReadLine(), out int id))
+        Console.Write("\n ID do contato a atualizar: ");
+        if (!int.TryParse(Console.ReadLine(), out int id))
         {
-            var contato = db.Contatos.Find(id);
-            
-            if (contato != null)
-            {
-                Console.Write($"Novo nome (atual: {contato.Nome}): ");
-                contato.Nome = Console.ReadLine();
-                
-                Console.Write($"Novo telefone (atual: {contato.Telefone}): ");
-                contato.Telefone = Console.ReadLine();
-                
-                Console.Write($"Novo email (atual: {contato.Email}): ");
-                contato.Email = Console.ReadLine();
-                
-                db.SaveChanges();
-                Console.WriteLine("Contato atualizado com sucesso!");
-            }
-            else
-            {
-                Console.WriteLine("Contato não encontrado!");
-            }
+            Console.WriteLine(" ID inválido!");
+            return;
+        }
+
+        var contato = await _db.Contatos.FindAsync(id);
+
+        if (contato == null)
+        {
+            Console.WriteLine(" Contato não encontrado!");
+            return;
+        }
+
+        Console.WriteLine($"\n Atualizando contato: {contato.Nome}");
+        
+        Console.Write($"Novo nome (atual: {contato.Nome}): ");
+        var nome = Console.ReadLine();
+        if (!string.IsNullOrWhiteSpace(nome))
+            contato.Nome = nome;
+
+        Console.Write($"Novo telefone (atual: {contato.Telefone}): ");
+        var telefone = Console.ReadLine();
+        if (!string.IsNullOrWhiteSpace(telefone))
+            contato.Telefone = telefone;
+
+        Console.Write($"Novo email (atual: {contato.Email}): ");
+        var email = Console.ReadLine();
+        if (!string.IsNullOrWhiteSpace(email))
+            contato.Email = email;
+
+        await _db.SaveChangesAsync();
+        Console.WriteLine(" Contato atualizado com sucesso!");
+    }
+
+    private async Task RemoverContatoAsync()
+    {
+        Console.Write("\n ID do contato a remover: ");
+        if (!int.TryParse(Console.ReadLine(), out int id))
+        {
+            Console.WriteLine(" ID inválido!");
+            return;
+        }
+
+        var contato = await _db.Contatos.FindAsync(id);
+
+        if (contato == null)
+        {
+            Console.WriteLine(" Contato não encontrado!");
+            return;
+        }
+
+        Console.Write($" Tem certeza que deseja remover {contato.Nome}? (s/N): ");
+        var confirmacao = Console.ReadLine()?.ToLower();
+
+        if (confirmacao == "s" || confirmacao == "sim")
+        {
+            _db.Contatos.Remove(contato);
+            await _db.SaveChangesAsync();
+            Console.WriteLine(" Contato removido com sucesso!");
+        }
+        else
+        {
+            Console.WriteLine("⏸ Operação cancelada.");
         }
     }
 
-    static void RemoverContato()
+    private static string LerEntradaObrigatoria(string campo)
     {
-        using var db = new AppDbContext();
-        
-        Console.Write("\nID do contato a remover: ");
-        if (int.TryParse(Console.ReadLine(), out int id))
+        string? entrada;
+        do
         {
-            var contato = db.Contatos.Find(id);
-            
-            if (contato != null)
+            entrada = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(entrada))
             {
-                db.Contatos.Remove(contato);
-                db.SaveChanges();
-                Console.WriteLine("Contato removido com sucesso!");
+                Console.Write($" {campo} é obrigatório. Digite novamente: ");
             }
-            else
-            {
-                Console.WriteLine("Contato não encontrado!");
-            }
-        }
+        } while (string.IsNullOrWhiteSpace(entrada));
+
+        return entrada;
     }
 }
