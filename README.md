@@ -62,9 +62,8 @@ dotnet run
 
 # 📊 Fluxo da Aplicação
 
-Menu Principal
-
 ```bash
+Menu Principal
 │
 ├── Listar contatos
 ├── Adicionar contato
@@ -95,11 +94,11 @@ dotnet run -- --db-test
 ```
 
 # 🎯 Possíveis Evoluções
-Criar API REST com ASP.NET Core
-Implementar validações mais robustas (FluentValidation)
-Adicionar logs estruturados
-Separar melhor camadas (Service/Repository)
-Criar interface web (Blazor ou MVC)
+- Criar API REST com ASP.NET Core
+- Implementar validações mais robustas 
+- Adicionar logs estruturados
+- Separar camadas (Service/Repository)
+- Criar interface web (Blazor ou MVC)
 
 # 👨‍💻 Autor
 
