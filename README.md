@@ -156,6 +156,6 @@ dotnet run -- --db-test
 
 **Moisés Aniceto**
 
-Backend Developer focado em sistemas escaláveis, seguros e performáticos.
+Backend Developer focado em aprender, criar e desenvolver sistemas escaláveis, seguros e performáticos.
 
 🔗 LinkedIn: https://www.linkedin.com/in/moisés-aniceto-71042a251
